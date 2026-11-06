@@ -9,6 +9,23 @@ It's built on [Resemble AI's Chatterbox](https://github.com/resemble-ai/chatterb
 which is MIT licensed, so commercial use is allowed. It supports **23 languages**,
 including English and Hindi.
 
+## 🔋 Default voice: NexinEV
+The tool ships with the **NexinEV** brand voice (`voices/nexinev.wav`). It's the voiceover
+from the *NexinEV Quick Answers* reel, with the background music removed using the
+free UVR-MDX vocal-isolation model. You don't need a reference file: just type text.
+
+```bash
+python clone_cli.py --text "Welcome to NexinEV." --out welcome.wav
+python clone_cli.py --text-file script.txt --lang hi --out hindi.wav
+```
+
+In the web app, **Voice** is already set to `NexinEV`. Choose *Custom* only when
+you want to clone a different voice. Measured speaker similarity to the original
+NexinEV VO is 0.91–0.97, compared with 0.61 for Chatterbox's stock voice.
+
+To add more presets, put a clean 10–20 s clip in `voices/` and add it to `VOICES`
+in `cloner.py`.
+
 ## Features
 - Zero-shot cloning: upload or record a short sample, with no training needed
 - Web UI (Gradio) and a command-line script
@@ -35,8 +52,8 @@ The first run downloads about 3 GB of model weights from Hugging Face
 Command line:
 
 ```bash
-python clone_cli.py --ref my_voice.wav --text "Hello, this is my cloned voice." --out hello.wav --i-have-consent
-python clone_cli.py --ref my_voice.wav --text "नमस्ते, यह मेरी आवाज़ है।" --lang hi --out hindi.wav --i-have-consent
+python clone_cli.py --text "Hello from NexinEV." --out hello.wav             # default NexinEV voice
+python clone_cli.py --ref my_voice.wav --text "Hello." --out hi.wav --i-have-consent   # any other voice
 ```
 
 ## Option 2: Free GPU on Google Colab

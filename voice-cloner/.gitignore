@@ -3,4 +3,5 @@ __pycache__/
 *.wav
 *.mp3
 !samples/*.wav
+!voices/*.wav
 outputs/

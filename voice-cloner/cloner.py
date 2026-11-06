@@ -7,6 +7,7 @@ cached in ~/.cache/huggingface. Runs on CPU, CUDA GPU, or Apple Silicon (MPS).
 from __future__ import annotations
 
 import re
+from pathlib import Path
 
 import torch
 import torchaudio as ta
@@ -20,6 +21,25 @@ LANGUAGES = {
     "Polish": "pl", "Portuguese": "pt", "Russian": "ru", "Spanish": "es",
     "Swahili": "sw", "Swedish": "sv", "Turkish": "tr",
 }
+
+
+# Built-in voice presets: name -> reference clip in ./voices.
+# NexinEV = clean voiceover isolated from the NexinEV Quick Answers reel (v3).
+VOICES_DIR = Path(__file__).parent / "voices"
+VOICES = {
+    "NexinEV": VOICES_DIR / "nexinev.wav",
+}
+DEFAULT_VOICE = "NexinEV"
+
+
+def resolve_voice(reference_audio: str | None = None, voice: str | None = None) -> str:
+    """Use an uploaded reference if given, otherwise a preset (NexinEV by default)."""
+    if reference_audio:
+        return str(reference_audio)
+    name = voice or DEFAULT_VOICE
+    if name not in VOICES:
+        raise ValueError(f"Unknown voice '{name}'. Available: {', '.join(VOICES)}")
+    return str(VOICES[name])
 
 
 def pick_device() -> str:
@@ -67,16 +87,19 @@ def split_text(text: str, max_chars: int = 250) -> list[str]:
 @torch.inference_mode()
 def clone_voice(
     text: str,
-    reference_audio: str,
+    reference_audio: str | None = None,
     language: str = "en",
     exaggeration: float = 0.5,
     cfg_weight: float = 0.5,
     temperature: float = 0.8,
     seed: int | None = None,
+    voice: str | None = None,
 ) -> tuple[int, torch.Tensor]:
-    """Speak `text` in the voice of `reference_audio`. Returns (sample_rate, wav)."""
+    """Speak `text` in the voice of `reference_audio`, or of preset `voice`
+    (NexinEV by default) when no reference is given. Returns (sample_rate, wav)."""
     if not text.strip():
         raise ValueError("Text is empty.")
+    reference_audio = resolve_voice(reference_audio, voice)
     if seed is not None:
         torch.manual_seed(seed)
     model = get_model(language)
